@@ -5,6 +5,9 @@ import IAdsPaginationRequest from "./Interface/Request/AdsPaginationRequest.inte
 import { Box, Button, Card, CardContent, CardHeader, CircularProgress, Grid, MenuItem, Pagination, Select, Table, TableBody, TableCell, TableHead, TableRow, TableSortLabel, TextField, Typography, styled, tableCellClasses } from "@mui/material";
 import IAdsClubs from "./Interface/AdsClubs.interface";
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from 'dayjs';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -26,6 +29,7 @@ const AdsClubs = () => {
     data: [] as IAdsClubs[],
     pageCount: 0
   });
+  const [startDate, SetStartDate] = useState<Dayjs>(dayjs(Date.now()));
 
   const [request, setRequest] = useState<IAdsPaginationRequest>({
     PageNumber: 1,
@@ -55,6 +59,23 @@ const AdsClubs = () => {
       arrow.style.color = "white";
     });
   };
+
+  const handleDateChange = (data: string) => {
+    const inputDate = data ? new Date(data) : new Date();
+
+    SetStartDate(dayjs(inputDate));
+
+    const year = inputDate ? inputDate.getFullYear() : "";
+    const month = inputDate ? (inputDate.getMonth() + 1).toString().padStart(2, '0') : "";
+    const day = inputDate ? inputDate.getDate().toString().padStart(2, '0') : "";
+
+    const formattedDate = `${year}-${month}-${day} 00:00:00.000`;
+
+    setRequest({
+      ...request,
+      StartDate: formattedDate,
+    });
+  }
 
   const fetchAdsClubs = async () => {
     try {
@@ -107,7 +128,6 @@ const AdsClubs = () => {
     console.log(response.data, "test1")
     return (
       <Box>
-
         <Box margin="16px">
           <Card sx={{ maxWidth: "100%", height: "100%" }}>
             <CardHeader
@@ -120,7 +140,7 @@ const AdsClubs = () => {
             />
             <CardContent>
               <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box display="flex" alignItems="center">
+                <Box display="flex" alignItems="flex-start">
                   <Typography sx={{ fontWeight: "fontWeightBold" }}>Show</Typography>
                   <Box marginLeft={1}>
                     <Select
@@ -145,12 +165,9 @@ const AdsClubs = () => {
                     <Typography sx={{ fontWeight: "fontWeightBold" }}>entries</Typography>
                   </Box>
                 </Box>
-                <Box display="flex" alignItems="center">
-                  {/* <Box marginRight={1}>
-                    <Typography sx={{ fontWeight: "fontWeightBold" }}>Search:</Typography>
-                  </Box> */}
-                  <Grid container spacing={2} direction="row">
-                    <Grid item xs={6}>
+                <Box display="flex" alignItems="flex-start" justifyContent="space-between">
+                  <Grid container spacing={1} direction="row">
+                    <Grid item xs={3}>
                       <TextField
                         fullWidth
                         variant="outlined"
@@ -159,12 +176,10 @@ const AdsClubs = () => {
                         name="Sku"
                         value={request.Sku} // Default to an empty string if undefined
                         onChange={handleChange}
-                      // error={submitted && !fieldValues.DCId}
-                      // helperText={submitted && !fieldValues.DCId && "DC Code is required"}
                       >
                       </TextField>
                     </Grid>
-                    <Grid item xs>
+                    <Grid item xs={3}>
                       <TextField
                         fullWidth
                         variant="outlined"
@@ -173,43 +188,34 @@ const AdsClubs = () => {
                         name="Club"
                         value={request.Club}
                         onChange={handleChange}
-                      // onChange={(e) => handleChange("BuildingName", e.target.value.trim() === ''? '' : e.target.value)}
-                      // error={submitted && !fieldValues.BuildingName}
-                      // helperText={submitted && !fieldValues.BuildingName && "Building Name is required"}
                       />
                     </Grid>
-                    <Grid item xs>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        size="small"
-                        label="Start Date"
-                        required
-                        name="StartDate"
-                        value={request.StartDate}
-                        onChange={handleChange}
-                      // onChange={(e) => handleChange("Address1", e.target.value.trim() === ''? '' : e.target.value)}
-                      // error={submitted && !fieldValues.Address1}
-                      // helperText={submitted && !fieldValues.Address1 && "Address Line 1 is required"}
-                      />
+                    <Grid item xs={3} display="flex" flexGrow={"inherit"}>
+                      <LocalizationProvider  dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                          sx={{marginBottom: '10px', width: "150px", maxWidth: "300px"}}
+                          onChange={(e) => handleDateChange(e.$d
+                          )}
+                          label="Start Date"
+                          value={startDate ?  startDate : dayjs(Date.now())}
+                          slotProps={{ textField: { size: 'small' , fullWidth: true} }}
+                        />
+                      </LocalizationProvider>
                     </Grid>
                     <Grid item xs>
                       <Button
+                        sx={{
+                          backgroundColor: "#1C3766",
+                          color: "white",
+                          fontWeight: "fontWeightBold"
+                        }}
                         onClick={() => {
                           fetchAdsClubs();
                         }}
                         variant="contained"
-                      >Submit</Button>
+                      >Apply</Button>
                     </Grid>
                   </Grid>
-                  {/* <TextField variant="outlined"
-                    size="small"
-                    value={searchQuery}
-                    onChange={(event) => {
-                      const query = event.target.value;
-                      setSearchQuery(query);
-                      setPage(1);
-                    }} /> */}
                 </Box>
               </Box>
               <Box marginTop={2}>
@@ -354,28 +360,28 @@ const AdsClubs = () => {
                     </TableHead>
                     <TableBody>
                       {
-                        // response.data === null || undefined
-                        //   ?
-                        //   <TableRow hover>
-                        //     <TableCell align="center" colSpan={15}>No Data</TableCell>
-                        //   </TableRow>
-                        //   :
-                        response.data.map((item: IAdsClubs) => {
-                          const endDate = convertDate(item.endDate)
-                          const startDate = convertDate(item.startDate)
+                        response.data.length === 0
+                          ?
+                          <TableRow hover>
+                            <TableCell align="center" colSpan={15}>No Data</TableCell>
+                          </TableRow>
+                          :
+                          response.data.map((item: IAdsClubs) => {
+                            const endDate = convertDate(item.endDate)
+                            const startDate = convertDate(item.startDate)
 
-                          return (
-                            <TableRow hover key={item.id}>
-                              <StyledTableCellSmall>{item.clubs}</StyledTableCellSmall>
-                              <StyledTableCellSmall>{item.sku}</StyledTableCellSmall>
-                              <StyledTableCellSmall>{item.ads}</StyledTableCellSmall>
-                              <StyledTableCellSmall>{item.divisor}</StyledTableCellSmall>
-                              <StyledTableCellSmall>{item.sales}</StyledTableCellSmall>
-                              <StyledTableCellSmall>{startDate}</StyledTableCellSmall>
-                              <StyledTableCellSmall>{endDate}</StyledTableCellSmall>
-                            </TableRow>
-                          );
-                        })}
+                            return (
+                              <TableRow hover key={item.id}>
+                                <StyledTableCellSmall>{item.clubs}</StyledTableCellSmall>
+                                <StyledTableCellSmall>{item.sku}</StyledTableCellSmall>
+                                <StyledTableCellSmall>{item.ads}</StyledTableCellSmall>
+                                <StyledTableCellSmall>{item.divisor}</StyledTableCellSmall>
+                                <StyledTableCellSmall>{item.sales}</StyledTableCellSmall>
+                                <StyledTableCellSmall>{startDate}</StyledTableCellSmall>
+                                <StyledTableCellSmall>{endDate}</StyledTableCellSmall>
+                              </TableRow>
+                            );
+                          })}
                     </TableBody>
                   </Table>
                 </Box>
