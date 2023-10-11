@@ -18,7 +18,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const StyledTableCellSmall = styled(TableCell)(({ theme }) => ({
+const StyledTableCellSmall = styled(TableCell)(() => ({
   padding: "8px 16px",
   fontSize: "12px",
 }));
@@ -60,8 +60,9 @@ const AdsClubs = () => {
     });
   };
 
-  const handleDateChange = (data: string) => {
-    const inputDate = data ? new Date(data) : new Date();
+  const handleDateChange = (data: Dayjs) => {
+    const test = data.toISOString()
+    const inputDate = data ? new Date(test) : new Date();
 
     SetStartDate(dayjs(inputDate));
 
@@ -77,22 +78,22 @@ const AdsClubs = () => {
     });
   }
 
+  
+
   const fetchAdsClubs = async () => {
+    console.log(request);
     try {
       setLoading(true);
 
       const getItem: AxiosRequestConfig = {
         method: 'POST',
-        url: `https://localhost:7020/api/TotalAdsClub/GetPaginatedTotalAdsClubs`,
+        url: `http://199.84.0.201:468/api/TotalAdsClub/GetPaginatedTotalAdsClubs`,
         data: request,
       };
       const response1 = await axios(getItem);
 
       if (response1 != null) {
-        console.log("API Response:", response1.data); // Debugging line
-
         setResponse(response1.data);
-        console.log("State Response:", response, "test");
       }
     } catch (error) {
       console.error("Error fetching item:", error);
@@ -121,11 +122,12 @@ const AdsClubs = () => {
 
   useEffect(() => {
     document.title = 'Ads | Per Clubs';
+    console.log(request);
     fetchAdsClubs()
   }, [request.PageNumber, request.PageSize]);
 
   if (!loading && response.data !== undefined) {
-    console.log(response.data, "test1")
+    
     return (
       <Box>
         <Box margin="16px">
@@ -194,8 +196,7 @@ const AdsClubs = () => {
                       <LocalizationProvider  dateAdapter={AdapterDayjs}>
                         <DatePicker
                           sx={{marginBottom: '10px', width: "150px", maxWidth: "300px"}}
-                          onChange={(e) => handleDateChange(e.$d
-                          )}
+                          onChange={(e: Dayjs) => { handleDateChange(e)}}
                           label="Start Date"
                           value={startDate ?  startDate : dayjs(Date.now())}
                           slotProps={{ textField: { size: 'small' , fullWidth: true} }}
@@ -392,7 +393,7 @@ const AdsClubs = () => {
                   shape="rounded"
                   count={response.pageCount}
                   page={request.PageNumber}
-                  onChange={(event, value) => {
+                  onChange={(_event, value): void => {
                     setRequest({
                       ...request,
                       PageNumber: value,
@@ -408,7 +409,7 @@ const AdsClubs = () => {
 
     )
   } else {
-    console.log(response.data, "test2")
+
     return (
       <Box
         display="flex"
