@@ -1,15 +1,16 @@
-import { Box, Button, Grid, TextField, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Grid, TextField, Typography } from '@mui/material';
 import useAdsChain from '../../Hooks/useAdsChain'
 import { DataGrid } from '@mui/x-data-grid';
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from 'dayjs';
+import { useContext } from 'react';
+import { AdsChainContext } from '../../Context/AdsChainContext';
 
 function AdsChains() {
-    const { chain } = useAdsChain();
+    const chain = useContext(AdsChainContext);
 
     const columns = [
-        { field: 'clubs', headerName: 'Club', width: 200 },
         { field: 'sku', headerName: 'Sku', width: 200 },
         { field: 'ads', headerName: 'Average', width: 200 },
         { field: 'sales', headerName: 'Sales', width: 200 },
@@ -17,6 +18,13 @@ function AdsChains() {
         { field: 'startDate', headerName: 'Start Date', width: 200 },
         { field: 'endDate', headerName: 'End Date', width: 200 },
     ];
+
+    const convertDate = (date: string) => {
+        const dateObject = new Date(date);
+        const formattedDate = dateObject.toLocaleDateString();
+    
+        return formattedDate;
+    }
 
     const handlePageChange = () => {
         console.log('page changed');
@@ -26,7 +34,7 @@ function AdsChains() {
         console.log('page size changed');
     }
 
-    if (chain.data.length > 0) {
+    if (chain.data?.length > 0) {
         return (
             <Box sx={{ height: 520, width: '95%', margin: 'auto' }}>
                 <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -84,6 +92,7 @@ function AdsChains() {
                 </Box>
                 <DataGrid
                     columns={columns} rows={...chain.data}
+                    rowCount={chain.pageCount}
                     rowHeight={38}
                     checkboxSelection
                     disableRowSelectionOnClick
@@ -95,9 +104,18 @@ function AdsChains() {
     }
     else {
         return (
-            <Box sx={{ height: 520, width: '100%' }}>
-                test
-            </Box>
+            <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            height="100vh"
+          >
+            <CircularProgress size={80} />
+            <Typography variant="h6" color="textSecondary" style={{ marginTop: '16px' }}>
+              Loading...
+            </Typography>
+          </Box>
         )
     }
 

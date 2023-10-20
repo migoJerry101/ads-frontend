@@ -87,7 +87,7 @@ const AdsClubs = () => {
 
       const getItem: AxiosRequestConfig = {
         method: 'POST',
-        url: `http://199.84.0.201:468/api/TotalAdsClub/GetPaginatedTotalAdsClubs`,
+        url: `https://localhost:7020/api/TotalAdsClub/GetPaginatedTotalAdsClubs`,
         data: request,
       };
       const response1 = await axios(getItem);
